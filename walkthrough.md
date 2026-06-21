@@ -97,7 +97,7 @@ Frontend (HTML, CSS, JavaScript)
 Flask Backend
   ↓
 AI Eco Agent
-(Google Gemini AI + Simulator Fallback)
+( Simulator Fallback)
   ↓
 Carbon Footprint Calculator
   ↓
