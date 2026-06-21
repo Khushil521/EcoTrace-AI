@@ -1,0 +1,21 @@
+# Python cache folders & files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+ENV/
+
+# Node.js folders (legacy fallback)
+node_modules/
+npm-debug.log
+
+# System files & VCS
+.git/
+.gitignore
+.dockerignore
+Dockerfile
+*.md
+.gemini/

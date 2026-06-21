@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoTrace — Personal Carbon Footprint Tracker & Guide</title>
+  <meta name="description"
+    content="Calculate, track, and systematically reduce your personal carbon footprint with EcoTrace. Real-time data and personalized reduction plans.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="logo-container">
+        <div class="logo-icon">
+          <i data-lucide="leaf"></i>
+        </div>
+        <span class="logo-text">EcoTrace</span>
+      </div>
+
+      <nav>
+        <button class="nav-btn active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i> Dashboard
+        </button>
+        <button class="nav-btn" data-tab="calculator">
+          <i data-lucide="calculator"></i> Calculate Footprint
+        </button>
+        <button class="nav-btn" data-tab="habits">
+          <i data-lucide="check-square"></i> Take Action
+        </button>
+        <button class="nav-btn" data-tab="gcp">
+          <i data-lucide="cloud"></i> Deploy to GCP
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- TAB 1: DASHBOARD -->
+      <section id="dashboard" class="tab-content active">
+        <div class="glass-card" style="margin-bottom: 2rem;">
+          <h1 class="text-gradient">Your Carbon Footprint Dashboard</h1>
+          <p class="lead">Track your emissions, monitor adopted habits, and view real-time environmental savings
+            compared to average footprints.</p>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-card" style="border-top: 4px solid var(--color-rose);">
+            <div class="kpi-value" id="kpi-total">0.0</div>
+            <div class="kpi-label">Current Footprint (t CO₂e/yr)</div>
+          </div>
+          <div class="kpi-card" style="border-top: 4px solid var(--color-emerald);">
+            <div class="kpi-value" id="kpi-savings">0.0</div>
+            <div class="kpi-label">Active Savings (t CO₂e/yr)</div>
+          </div>
+          <div class="kpi-card" style="border-top: 4px solid var(--color-cyan);">
+            <div class="kpi-value" id="kpi-trees">0</div>
+            <div class="kpi-label">Trees Required Offset/Yr</div>
+          </div>
+          <div class="kpi-card" style="border-top: 4px solid var(--color-indigo);">
+            <div class="kpi-value" id="kpi-comparison">0%</div>
+            <div class="kpi-label">vs National Average</div>
+          </div>
+        </div>
+
+
+
+        <div class="dashboard-grid">
+          <!-- Left Column: Visual Charts & Logs -->
+          <div class="dashboard-main">
+            <div class="glass-card">
+              <h2>Emissions Breakdown</h2>
+              <div class="chart-card-content">
+                <div class="chart-container">
+                  <canvas id="emissionsChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <h2>Emission Calculation Logs</h2>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                Historical logs saved on this browser/server. Calculate your footprint to create new records.
+              </p>
+              <div class="logs-table-wrapper">
+                <table class="logs-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Energy</th>
+                      <th>Transportation</th>
+                      <th>Food & Diet</th>
+                      <th>Waste</th>
+                      <th>Total (t CO₂e)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="logs-tbody">
+                    <tr>
+                      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        No logs recorded yet. Use the "Calculate Footprint" tab above to start.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Personalized Actionable Insights -->
+          <div class="dashboard-sidebar">
+            <div class="glass-card" style="height: 100%;">
+              <h2>Eco Insights</h2>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Personalized tips generated automatically from your emission patterns:
+              </p>
+              <div class="insights-list" id="insights-container">
+                <div class="insight-item">
+                  <div class="insight-icon-container info">
+                    <i data-lucide="info"></i>
+                  </div>
+                  <div>
+                    <div class="insight-title">Complete a footprint calculation</div>
+                    <div class="insight-desc">Go to the "Calculate Footprint" tab to run a personalized analysis and
+                      generate diagnostic tips.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: CALCULATOR (MULTI-STEP WIZARD) -->
+      <section id="calculator" class="tab-content">
+        <div class="glass-card calculator-wizard">
+          <h2 id="calc-title">Determine Your Footprint</h2>
+
+          <div class="step-indicator">
+            <div class="step-dot active" data-step="1">1</div>
+            <div class="step-dot" data-step="2">2</div>
+            <div class="step-dot" data-step="3">3</div>
+            <div class="step-dot" data-step="4">4</div>
+            <div class="step-dot" data-step="5">5</div>
+          </div>
+
+          <form id="calculator-form">
+            <!-- Step 1: Energy -->
+            <div class="calc-step active" data-step="1">
+              <h3>Step 1: Home Energy Consumption</h3>
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Enter your average monthly utility usages. Leave fields blank or 0 if they don't apply.
+              </p>
+
+              <div class="form-group">
+                <label for="energy-electricity">Monthly Electricity</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="zap"></i></span>
+                  <input type="number" id="energy-electricity" placeholder="0" min="0">
+                  <span class="input-suffix">kWh / mo</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="energy-gas">Monthly Natural Gas</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="flame"></i></span>
+                  <input type="number" id="energy-gas" placeholder="0" min="0">
+                  <span class="input-suffix">therms / mo</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="energy-oil">Monthly Heating Oil</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="droplet"></i></span>
+                  <input type="number" id="energy-oil" placeholder="0" min="0">
+                  <span class="input-suffix">gallons / mo</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Transportation -->
+            <div class="calc-step" data-step="2">
+              <h3>Step 2: Transportation & Travel</h3>
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Calculate your travel habits. Factor in personal vehicles, electric vehicles, flights, and public
+                transit.
+              </p>
+
+              <div class="form-group">
+                <label for="transport-car-miles">Annual Car Mileage (Gas/Diesel)</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="car"></i></span>
+                  <input type="number" id="transport-car-miles" placeholder="0" min="0">
+                  <span class="input-suffix">miles / yr</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="transport-car-mpg">Average Fuel Efficiency (MPG)</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="gauge"></i></span>
+                  <input type="number" id="transport-car-mpg" value="25" min="5">
+                  <span class="input-suffix">mpg</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="transport-ev-miles">Annual Electric Vehicle Mileage</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="battery-charging"></i></span>
+                  <input type="number" id="transport-ev-miles" placeholder="0" min="0">
+                  <span class="input-suffix">miles / yr</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="transport-transit-miles">Weekly Public Transit Travel (Bus/Train)</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="train"></i></span>
+                  <input type="number" id="transport-transit-miles" placeholder="0" min="0">
+                  <span class="input-suffix">miles / wk</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="transport-flight-hours">Annual Air Travel Hours</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="plane"></i></span>
+                  <input type="number" id="transport-flight-hours" placeholder="0" min="0">
+                  <span class="input-suffix">hours / yr</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Food & Diet -->
+            <div class="calc-step" data-step="3">
+              <h3>Step 3: Food & Eating Habits</h3>
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Diet choice accounts for a substantial share of global emissions. Choose the profile that matches your
+                consumption.
+              </p>
+
+              <div class="form-group">
+                <label for="food-diet">Typical Diet Profile</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="utensils"></i></span>
+                  <select id="food-diet">
+                    <option value="medium-meat">Average Meat Eater (Moderate meat intake)</option>
+                    <option value="heavy-meat">Heavy Meat Eater (Frequent beef/pork)</option>
+                    <option value="low-meat">Low Meat / Flexitarian (Occasional meat)</option>
+                    <option value="vegetarian">Vegetarian (No meat, consumes dairy/eggs)</option>
+                    <option value="vegan">Vegan (Zero animal products)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Waste -->
+            <div class="calc-step" data-step="4">
+              <h3>Step 4: Consumption & Waste</h3>
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Recycling and general household consumption levels affect waste production.
+              </p>
+
+              <div class="form-group">
+                <label for="waste-recycling">How much of your waste do you recycle?</label>
+                <div class="input-container">
+                  <span class="input-icon"><i data-lucide="recycle"></i></span>
+                  <select id="waste-recycling">
+                    <option value="0.2">Some recycling (Metal/paper only)</option>
+                    <option value="0.4">Heavy recycling (Plastics, paper, metal, glass)</option>
+                    <option value="0.0">No recycling at all</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 5: Summary & Save -->
+            <div class="calc-step" data-step="5">
+              <h3>Step 5: Emission Calculation Results</h3>
+              <div id="results-loading" style="text-align: center; padding: 2rem;">
+                <p>Computing carbon factors...</p>
+              </div>
+              <div id="results-display" style="display: none; text-align: center;">
+                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Your estimated annual
+                  carbon footprint is</p>
+                <div class="text-gradient" id="results-total-co2"
+                  style="font-size: 4rem; font-weight: 800; line-height: 1;">0.00</div>
+                <p style="font-size: 1.1rem; font-weight: 700; color: var(--color-emerald); margin-bottom: 1.5rem;">
+                  metric tons CO₂e / year</p>
+
+                <div
+                  style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border); text-align: left; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>⚡ Energy:</span>
+                    <strong id="res-energy">0.0 t</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>🚗 Transportation:</span>
+                    <strong id="res-transport">0.0 t</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>🥗 Food & Diet:</span>
+                    <strong id="res-food">0.0 t</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>🗑️ Waste & Consumption:</span>
+                    <strong id="res-waste">0.0 t</strong>
+                  </div>
+                </div>
+
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">
+                  Note: The national average per capita is roughly 16.0 tons in the US, and about 4.5 tons globally.
+                </p>
+
+                <button type="button" class="btn" id="btn-save-log" style="width: 100%;">
+                  <i data-lucide="save"></i> Save Calculation to History & Dashboard
+                </button>
+              </div>
+            </div>
+
+            <!-- Button navigation -->
+            <div class="button-row">
+              <button type="button" class="btn btn-secondary" id="btn-prev" style="visibility: hidden;">
+                <i data-lucide="arrow-left"></i> Previous
+              </button>
+              <button type="button" class="btn" id="btn-next">
+                Next <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- TAB 3: HABIT TRACKER / TAKE ACTION -->
+      <section id="habits" class="tab-content">
+        <div class="glass-card" style="margin-bottom: 2rem;">
+          <h1 class="text-gradient">Take Action: Reduce Footprint</h1>
+          <p class="lead">Commit to sustainable daily habits. Active habits subtract estimated CO₂ values from your
+            dashboard footprint in real-time.</p>
+        </div>
+
+        <div class="habits-grid" id="habits-container">
+          <!-- Dynamic Habits cards injected by JS -->
+        </div>
+      </section>
+
+      <!-- TAB 4: GCP DEPLOYMENT GUIDE -->
+      <section id="gcp" class="tab-content">
+        <div class="glass-card gcp-guide">
+          <h1 class="text-gradient">GCP Deployment Walkthrough</h1>
+          <p class="lead">This project is designed to run in a lightweight Docker container, making it a perfect fit for
+            serverless hosting on <strong>Google Cloud Run</strong>.</p>
+
+          <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1.5rem 0;">
+
+          <h2>Prerequisites & Setup</h2>
+          <div class="gcp-steps">
+            <div class="gcp-step">
+              <div class="step-num">1</div>
+              <div class="step-detail">
+                <h3>Install Tools</h3>
+                <p>Ensure you have the <a href="https://cloud.google.com/sdk/docs/install" target="_blank">Google Cloud
+                    SDK (gcloud CLI)</a> and <a href="https://www.docker.com/" target="_blank">Docker</a> installed
+                  locally.</p>
+              </div>
+            </div>
+
+            <div class="gcp-step">
+              <div class="step-num">2</div>
+              <div class="step-detail">
+                <h3>Authorize Google Cloud</h3>
+                <p>Login and configure your active project: </p>
+                <div class="terminal">
+                  <div class="terminal-header">bash</div>
+                  <code>gcloud auth login</code><br>
+                  <code>gcloud config set project <span class="comment">[YOUR_GCP_PROJECT_ID]</span></code>
+                </div>
+              </div>
+            </div>
+
+            <div class="gcp-step">
+              <div class="step-num">3</div>
+              <div class="step-detail">
+                <h3>Enable Required APIs</h3>
+                <p>Activate Cloud Run and Artifact Registry APIs for your project: </p>
+                <div class="terminal">
+                  <div class="terminal-header">bash</div>
+                  <code>gcloud services enable run.googleapis.com artifactregistry.googleapis.com</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="gcp-step">
+              <div class="step-num">4</div>
+              <div class="step-detail">
+                <h3>Create Artifact Registry Repo</h3>
+                <p>Create a Docker repository in your preferred GCP region (e.g., us-central1): </p>
+                <div class="terminal">
+                  <div class="terminal-header">bash</div>
+                  <code>gcloud artifacts repositories create ecotrace-repo \</code><br>
+                  <code>  --repository-format=docker \</code><br>
+                  <code>  --location=us-central1 \</code><br>
+                  <code>  --description="EcoTrace Container Repository"</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="gcp-step">
+              <div class="step-num">5</div>
+              <div class="step-detail">
+                <h3>Configure Docker Authentication</h3>
+                <p>Authenticate Docker to access Artifact Registry:</p>
+                <div class="terminal">
+                  <div class="terminal-header">bash</div>
+                  <code>gcloud auth configure-docker us-central1-docker.pkg.dev</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="gcp-step">
+              <div class="step-num">6</div>
+              <div class="step-detail">
+                <h3>Build and Push the Container</h3>
+                <p>Build the container for the <code>linux/amd64</code> architecture and push to GCP:</p>
+                <div class="terminal">
+                  <div class="terminal-header">bash</div>
+                  <span class="comment"># Build the image using the local Dockerfile</span><br>
+                  <code>docker build -t us-central1-docker.pkg.dev/<span class="comment">[YOUR_PROJECT_ID]</span>/ecotrace-repo/ecotrace:v1 .</code><br><br>
+                  <span class="comment"># Push the image to Artifact Registry</span><br>
+                  <code>docker push us-central1-docker.pkg.dev/<span class="comment">[YOUR_PROJECT_ID]</span>/ecotrace-repo/ecotrace:v1</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="gcp-step">
+              <div class="step-num">7</div>
+              <div class="step-detail">
+                <h3>Deploy to Cloud Run</h3>
+                <p>Deploy the pushed image as a public serverless service on Cloud Run:</p>
+                <div class="terminal">
+                  <div class="terminal-header">bash</div>
+                  <code>gcloud run deploy ecotrace \</code><br>
+                  <code>  --image=us-central1-docker.pkg.dev/<span class="comment">[YOUR_PROJECT_ID]</span>/ecotrace-repo/ecotrace:v1 \</code><br>
+                  <code>  --platform=managed \</code><br>
+                  <code>  --region=us-central1 \</code><br>
+                  <code>  --allow-unauthenticated</code>
+                </div>
+                <p style="margin-top: 0.5rem; color: var(--color-emerald);">
+                  ★ Once deployed, GCP will output a public HTTPS service URL where your application can be accessed
+                  globally!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <!-- CHATBOT SECTION -->
+      <section id="chatbot" class="tab-content">
+        <div class="glass-card">
+          <h1 class="text-gradient">Eco AI Assistant</h1>
+
+          <div id="chat-box"
+            style="height:300px;overflow-y:auto;border:1px solid #ccc;padding:10px;margin-bottom:10px;">
+          </div>
+
+          <input type="text" id="user-message" placeholder="Ask about carbon footprint..."
+            style="width:80%;padding:10px;">
+
+          <button onclick="sendMessage()" class="btn">
+            Send
+          </button>
+        </div>
+      </section>
+
+      <button class="nav-btn" data-tab="chatbot">
+        🤖 Eco AI
+      </button>
+      <button class="nav-btn" data-tab="gcp"></button>
+
+      <p>&copy; 2026 EcoTrace Carbon Footprint Tracker. All rights reserved. Built for GCP Deployment.</p>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("user-message");
+      const chatBox = document.getElementById("chat-box");
+
+      const message = input.value.trim();
+      if (!message) return;
+
+      chatBox.innerHTML += `
+        <div class="user-message">
+          <div class="message">
+            ${message}
+          </div>
+        </div>
+        `;
+
+      try {
+        const response = await fetch("/api/agent/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: message
+          })
+        });
+
+        console.log("Status:", response.status);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        const text = await response.text();
+        console.log("Raw Response:", text);
+
+        if (!response.ok) {
+          chatBox.innerHTML += `<p style="color:red"><b>Error:</b> ${text}</p>`;
+          return;
+        }
+
+        chatBox.innerHTML += `
+              <div id="loading">
+              🤖 Eco AI is thinking...
+              </div>
+          `;
+
+        const data = JSON.parse(text);
+
+        // chatBox.innerHTML += `
+        //     <div class="bot-message">
+        //       <div class="message-bubble bot">
+        //         <p style="color:green">
+        //             <b>Eco AI:</b> ${data.response}
+        //         </p>
+        //     </div>
+        //   </div>
+        // `;
+        const formattedResponse = data.response
+          .replace(/\n/g, "<br>")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/### (.*?)(<br>|$)/g, "<h3>$1</h3>");
+
+        chatBox.innerHTML += `
+            <div class="bot-message">
+              <div class="avatar">🤖</div>
+              <div class="message">
+                ${formattedResponse}
+              </div>
+            </div>
+        `;
+
+      } catch (err) {
+        console.error(err);
+
+        chatBox.innerHTML += `
+                <p style="color:red">
+                    <b>Connection Error:</b> ${err.message}
+                </p>
+            `;
+      }
+
+      input.value = "";
+    }
+    // const typingId = Date.now();
+    const duration = ((Date.now() - start) / 1000).toFixed(1);
+
+    chatBox.innerHTML += `
+      <div style="font-size:12px;color:#94a3b8">
+        Response generated in ${duration}s
+      </div>
+      `;
+
+
+
+    lucide.createIcons();
+  </script>
+</body>
+
+</html>
